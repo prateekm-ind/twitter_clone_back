@@ -1,0 +1,37 @@
+
+#HTTP Server Port
+server:
+  port: 8081
+
+#Defining Context Path for the Application
+  servlet:
+    context-path: /twitter
+
+
+
+###
+#DATASOURCE SETTINGS
+###
+spring:
+  application:
+    name: TwitterClone
+  datasource:
+    url: jdbc:postgresql://localhost:5432/twitter_clone
+    username: postgres
+    password: password
+    initialization-mode: always
+    initialize: true
+    #spring.datasource.schema=classpath:/schema.sql
+    continue-on-error: true
+
+
+###
+#JPA SETTINGS
+###
+  jpa:
+    hibernate:
+      dialect : org.hibernate.dialect.PostgreSQL95Dialect
+      ddl-auto: update
+      show-sql: true
+      format_sql: true
+      naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
