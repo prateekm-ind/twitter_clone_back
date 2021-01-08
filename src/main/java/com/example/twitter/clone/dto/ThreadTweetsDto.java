@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReTweetsDto {
+public class ThreadTweetsDto {
     private Long id;
     private String name;
     private String description;

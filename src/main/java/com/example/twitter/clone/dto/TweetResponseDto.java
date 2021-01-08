@@ -1,14 +1,19 @@
 package com.example.twitter.clone.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationResponse {
+@Builder
+public class TweetResponseDto {
+    private Long id;
+    private String tweetname;
+    private String url;
+    private String description;
     private String username;
-    private String jwt;
-    private String refreshToken;
+    private String retweetname;
 }

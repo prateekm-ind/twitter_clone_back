@@ -1,9 +1,10 @@
 package com.example.twitter.clone.jwt;
 
-import com.example.twitter.clone.exception.TwitterAppGeneralException;
+import com.example.twitter.clone.exception.CustomExpiredJwtExceptionHandler;
+import com.example.twitter.clone.exception.TwitterAppRuntimeException;
 import com.example.twitter.clone.service.UserDetailsServiceImpl;
 import io.jsonwebtoken.ExpiredJwtException;
-import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,7 +13,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.persistence.Column;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,12 +29,18 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Autowired
     JwtProvider jwtProvider;
 
-
+    @SneakyThrows
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)  {
         String requestHeader= request.getHeader(HEADER_STRING);
         if(requestHeader == null || !requestHeader.startsWith(TOKEN_PREFIX)){
-            chain.doFilter(request,response);
+            try {
+                chain.doFilter(request,response);
+            } catch (IOException e) {
+                throw new TwitterAppRuntimeException("Spring seurity filter not initiated");
+            } catch (ServletException e) {
+               throw new TwitterAppRuntimeException("Spring seurity filter not initiated");
+            }
             return;
         }
 
@@ -47,28 +53,20 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private UsernamePasswordAuthenticationToken getAuthenticationToken(HttpServletRequest request) {
-        String bearerString= request.getHeader(HEADER_STRING);
-        Boolean isTokenValid= false;
-        String token=bearerString.substring(7);
+        String bearerString = request.getHeader(HEADER_STRING);
+        Boolean isTokenValid = false;
+        String token = bearerString.substring(7);
         //System.out.println("JWT-TOKEN==>"+token);
 
-        String username= jwtProvider.extractUsernameFromJWT(token);
+        String username = jwtProvider.extractUsernameFromJWT(token);
 
-        if(username!=null && SecurityContextHolder.getContext().getAuthentication() == null){
-            UserDetails userDetails= this.userDetailsService.loadUserByUsername(username);
-            try {
-                isTokenValid= jwtProvider.validateToken(token, userDetails);
-                if(isTokenValid){
-                    return new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities());
-                }
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            isTokenValid = jwtProvider.validateToken(token, userDetails);
+            if (isTokenValid) {
+                return new UsernamePasswordAuthenticationToken(username, null, userDetails.getAuthorities());
             }
-            catch (ExpiredJwtException e){
-                throw new TwitterAppGeneralException("JWT token Expired. Please login again.");
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-
+            return null;
         }
         return null;
     }

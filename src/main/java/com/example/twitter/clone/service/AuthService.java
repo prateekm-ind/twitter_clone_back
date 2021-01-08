@@ -2,9 +2,11 @@ package com.example.twitter.clone.service;
 
 import com.example.twitter.clone.dto.AuthenticationResponse;
 import com.example.twitter.clone.dto.LoginRequestDto;
+import com.example.twitter.clone.dto.RefreshTokenRequest;
 import com.example.twitter.clone.dto.RegisteredUserDto;
+import com.example.twitter.clone.entity.RefreshToken;
 import com.example.twitter.clone.entity.RegisteredUser;
-import com.example.twitter.clone.exception.TwitterAppGeneralException;
+import com.example.twitter.clone.exception.TwitterAppRuntimeException;
 import com.example.twitter.clone.jwt.JwtProvider;
 import com.example.twitter.clone.repository.RegisteredUserRepository;
 import lombok.AllArgsConstructor;
@@ -32,6 +34,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
 
     //this annotation is used in method or class level when the specific class/method is used for Realtional DB interactions
     @Transactional
@@ -54,18 +57,32 @@ public class AuthService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         catch (BadCredentialsException e){
-            throw new TwitterAppGeneralException("Credentials are not correct");
+            throw new TwitterAppRuntimeException("Credentials are not correct");
         }
 
         final UserDetails userDetails= userDetailsService.loadUserByUsername(loginRequestDto.getUsername());
 
         final String jwtToken= jwtProvider.generateToken(authentication);
 
-        return new AuthenticationResponse(userDetails.getUsername(),jwtToken);
+        final RefreshToken refreshToken= refreshTokenService.generateRefreshToken(loginRequestDto.getUsername());
+
+        return new AuthenticationResponse(userDetails.getUsername(),jwtToken,refreshToken.getToken());
     }
 
     public RegisteredUser getCurrentUser() {
-        UserDetails principal= (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return registeredUserRepository.findByUsername(principal.getUsername()).orElseThrow(()-> new UsernameNotFoundException("User not found"));
+        String username="";
+        Object principal= SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(principal instanceof UserDetails){
+            username= ((UserDetails) principal).getUsername();
+        }
+        else{
+            username= principal.toString();
+        }
+
+        return registeredUserRepository.findByUsername(username).orElseThrow(()-> new TwitterAppRuntimeException("User not found"));
+    }
+
+    public void deleteRefreshTokenForUser(RefreshTokenRequest refreshTokenRequest) {
+        refreshTokenService.deleteTokenFromRedisDb(refreshTokenRequest);
     }
 }

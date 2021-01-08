@@ -2,6 +2,7 @@ package com.example.twitter.clone.controller;
 
 import com.example.twitter.clone.dto.AuthenticationResponse;
 import com.example.twitter.clone.dto.LoginRequestDto;
+import com.example.twitter.clone.dto.RefreshTokenRequest;
 import com.example.twitter.clone.dto.RegisteredUserDto;
 import com.example.twitter.clone.entity.RegisteredUser;
 import com.example.twitter.clone.service.AuthService;
@@ -12,6 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
+
+import static org.springframework.http.ResponseEntity.status;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -40,6 +45,12 @@ public class AuthController {
     public AuthenticationResponse login(@RequestBody LoginRequestDto loginRequestDto){
         return authService.login(loginRequestDto);
 
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest){
+        authService.deleteRefreshTokenForUser(refreshTokenRequest);
+        return new ResponseEntity<Void>(HttpStatus.ACCEPTED);
     }
 
 }

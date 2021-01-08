@@ -1,8 +1,12 @@
 package com.example.twitter.clone.jwt;
 
+import com.example.twitter.clone.exception.CustomExceptionHandler;
+import com.example.twitter.clone.exception.CustomExpiredJwtExceptionHandler;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.SneakyThrows;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,7 +46,12 @@ public class JwtProvider {
      *returns the Date extracted from the JWT
      */
     public Date extractExpirationDate(String token){
-        return extractClaims(token).getExpiration();
+        try {
+            Date validDate= extractClaims(token).getExpiration();
+            return validDate;
+        }catch (ExpiredJwtException e){
+            throw new CustomExpiredJwtExceptionHandler(e.getHeader(),e.getClaims(),"Jwt token expired. Please sign in again");
+        }
     }
 
     /*
@@ -56,9 +65,19 @@ public class JwtProvider {
     /*
      * returns the Claims object
      * */
+    @SneakyThrows
     @SuppressWarnings("deprecation")
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+        try {
+           Claims claims=Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+           return claims;
+        }
+        catch (ExpiredJwtException e){
+            throw new CustomExpiredJwtExceptionHandler(e.getHeader(),e.getClaims(),"Jwt token expired. Please sign in again.");
+        }
+        catch (Exception e){
+            throw new CustomExceptionHandler("Could not able to parse JWT.");
+        }
     }
 
     /**
