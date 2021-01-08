@@ -20,7 +20,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ReTweets {
+public class ThreadTweets {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;

@@ -35,3 +35,15 @@ spring:
       show-sql: true
       format_sql: true
       naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
+
+management:
+        server:
+            port: 9090
+        security:
+             enabled: false
+
+
+        endpoints:
+                jmx:
+                  exposure:
+                      include:

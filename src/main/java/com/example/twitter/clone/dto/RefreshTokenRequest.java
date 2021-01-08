@@ -4,11 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+import javax.validation.constraints.NotBlank;
+
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationResponse {
+@Data
+public class RefreshTokenRequest {
     private String username;
-    private String jwt;
+    @NotBlank
     private String refreshToken;
+
 }

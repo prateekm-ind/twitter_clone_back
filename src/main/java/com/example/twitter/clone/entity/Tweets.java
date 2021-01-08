@@ -44,5 +44,5 @@ public class Tweets {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "id", referencedColumnName = "id")
-    private ReTweets reTweets;
+    private ThreadTweets threadTweets;
 }
