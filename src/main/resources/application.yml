@@ -13,6 +13,8 @@ server:
 #DATASOURCE SETTINGS
 ###
 spring:
+  devtools:
+    add-properties: false
   application:
     name: TwitterClone
   datasource:
@@ -47,3 +49,15 @@ management:
                 jmx:
                   exposure:
                       include:
+
+
+logging:
+      level:
+          root: INFO
+          com:
+            example:
+              twitter:
+                  clone: TRACE
+
+
+

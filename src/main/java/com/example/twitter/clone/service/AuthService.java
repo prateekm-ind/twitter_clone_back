@@ -1,5 +1,6 @@
 package com.example.twitter.clone.service;
 
+import com.example.twitter.clone.controller.AuthController;
 import com.example.twitter.clone.dto.AuthenticationResponse;
 import com.example.twitter.clone.dto.LoginRequestDto;
 import com.example.twitter.clone.dto.RefreshTokenRequest;
@@ -10,6 +11,11 @@ import com.example.twitter.clone.exception.TwitterAppRuntimeException;
 import com.example.twitter.clone.jwt.JwtProvider;
 import com.example.twitter.clone.repository.RegisteredUserRepository;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,8 +29,10 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AuthService {
+
+    Logger logger= LoggerFactory.getLogger(AuthService.class);
 
     //@AllArgsConstructor will used for the constructor Injection
     //(@Autowired) feild injection substitute
@@ -39,6 +47,7 @@ public class AuthService {
     //this annotation is used in method or class level when the specific class/method is used for Realtional DB interactions
     @Transactional
     public void signup(RegisteredUserDto registeredUserDto){
+        logger.trace("inside signup method");
         RegisteredUser user= new RegisteredUser();
         user.setUsername(registeredUserDto.getUsername());
         user.setEmail(registeredUserDto.getEmail());
@@ -52,11 +61,13 @@ public class AuthService {
     }
 
     public AuthenticationResponse login(LoginRequestDto loginRequestDto){
+        logger.trace("inside login method");
         Authentication authentication= authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(),loginRequestDto.getPassword()));
         try {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         catch (BadCredentialsException e){
+            logger.trace("inside catch block for BadCredentialException");
             throw new TwitterAppRuntimeException("Credentials are not correct");
         }
 
@@ -70,6 +81,7 @@ public class AuthService {
     }
 
     public RegisteredUser getCurrentUser() {
+        logger.trace("inside getCurrentuser method");
         String username="";
         Object principal= SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(principal instanceof UserDetails){
@@ -83,6 +95,7 @@ public class AuthService {
     }
 
     public void deleteRefreshTokenForUser(RefreshTokenRequest refreshTokenRequest) {
+        logger.trace("inside deleteRefreshTokenForUser method");
         refreshTokenService.deleteTokenFromRedisDb(refreshTokenRequest);
     }
 }

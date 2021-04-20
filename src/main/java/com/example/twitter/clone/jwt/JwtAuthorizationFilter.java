@@ -4,6 +4,7 @@ import com.example.twitter.clone.exception.CustomExpiredJwtExceptionHandler;
 import com.example.twitter.clone.exception.TwitterAppRuntimeException;
 import com.example.twitter.clone.service.UserDetailsServiceImpl;
 import io.jsonwebtoken.ExpiredJwtException;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,14 +21,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private static final String HEADER_STRING = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer ";
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
-    @Autowired
-    JwtProvider jwtProvider;
+    private final UserDetailsServiceImpl userDetailsService;
+    private final JwtProvider jwtProvider;
 
     @SneakyThrows
     @Override
@@ -37,9 +37,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             try {
                 chain.doFilter(request,response);
             } catch (IOException e) {
-                throw new TwitterAppRuntimeException("Spring seurity filter not initiated");
+                throw new TwitterAppRuntimeException("Spring security filter not initiated. IO-Exception");
             } catch (ServletException e) {
-               throw new TwitterAppRuntimeException("Spring seurity filter not initiated");
+               throw new TwitterAppRuntimeException("Spring security filter not initiated. Servlet-Exception");
             }
             return;
         }

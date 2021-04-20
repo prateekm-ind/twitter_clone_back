@@ -1,5 +1,6 @@
 package com.example.twitter.clone;
 
+import com.example.twitter.clone.config.CorsConfig;
 import com.example.twitter.clone.config.RedisConfig;
 import com.example.twitter.clone.config.SwaggerConfig;
 import org.springframework.boot.SpringApplication;
